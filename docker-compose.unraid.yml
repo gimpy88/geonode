@@ -1,6 +1,7 @@
 # Requires Docker Compose 2.24.4+ for !override.
 services:
   django:
+    pull_policy: build
     mem_limit: 1280m
     cpus: 1.5
     command: uwsgi --ini /usr/src/geonode/uwsgi.unraid.ini
@@ -8,6 +9,7 @@ services:
       start_period: 300s
       retries: 5
   celery:
+    pull_policy: build
     mem_limit: 1536m
     cpus: 1.0
     healthcheck:
