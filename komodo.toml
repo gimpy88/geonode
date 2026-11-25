@@ -1,0 +1,18 @@
+# Before deploying, populate Environment from komodo.env.example
+# and replace every CHANGE_ME placeholder.
+[[stack]]
+name = "geonode"
+
+[stack.config]
+server = "Unraid"
+git_account = "gimpy88"
+repo = "gimpy88/geonode"
+branch = "master"
+files_on_host = false
+run_directory = "."
+file_paths = ["docker-compose.yml", "docker-compose.unraid.yml"]
+env_file_path = ".env"
+project_name = "geonode"
+run_build = true
+auto_update = false
+destroy_before_deploy = false
