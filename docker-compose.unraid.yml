@@ -1,0 +1,98 @@
+# Requires Docker Compose 2.24.4+ for !override.
+services:
+  django:
+    mem_limit: 1280m
+    cpus: 1.5
+    command: uwsgi --ini /usr/src/geonode/uwsgi.unraid.ini
+    healthcheck:
+      start_period: 300s
+      retries: 5
+  celery:
+    mem_limit: 1536m
+    cpus: 1.0
+    healthcheck:
+      start_period: 180s
+      retries: 5
+  nginx:
+    mem_limit: 128m
+    cpus: 0.5
+    ports: !override
+      - "${HTTP_PORT:-8085}:80"
+  letsencrypt:
+    profiles: ["internal-tls"]
+  geoserver:
+    mem_limit: 2560m
+    cpus: 2.0
+    ports: !reset []
+    healthcheck:
+      start_period: 180s
+      retries: 5
+  db:
+    mem_limit: 1280m
+    cpus: 1.5
+    shm_size: 256m
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=768MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - max_parallel_workers=2
+      - -c
+      - max_parallel_workers_per_gather=1
+  redis:
+    mem_limit: 384m
+    cpus: 0.5
+    command: redis-server --maxmemory 128mb --maxmemory-policy noeviction --appendonly yes
+
+# Bind-backed named volumes retain Docker's volume initialization semantics.
+volumes:
+  statics:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${APPDATA_PATH}/statics
+  geoserver-data-dir:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${APPDATA_PATH}/geoserver
+  dbdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${APPDATA_PATH}/postgresql
+  redisdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${APPDATA_PATH}/redis
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GIS_DATA_PATH}/data
+  backup-restore:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GIS_DATA_PATH}/backups
+  dbbackups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GIS_DATA_PATH}/dbbackups
